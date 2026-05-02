@@ -13,7 +13,7 @@
     body {
       margin: 0;
       min-height: 100vh;
-      background: linear-gradient(135deg, #071b4d, #041026);
+      background: linear-gradient(135deg, #0b2b16, #04100a);
       color: white;
       display: flex;
       align-items: center;
@@ -24,7 +24,7 @@
     .box {
       width: 100%;
       max-width: 900px;
-      background: rgba(255, 255, 255, 0.08);
+      background: rgba(255, 255, 255, 0.07);
       border: 1px solid rgba(255, 255, 255, 0.14);
       border-radius: 22px;
       padding: 24px;
@@ -35,11 +35,12 @@
     h1 {
       margin: 0 0 10px;
       font-size: 30px;
+      color: #ffffff;
     }
 
     p {
       margin: 0 0 18px;
-      color: #d7e5ff;
+      color: #dfffea;
       line-height: 1.6;
     }
 
@@ -70,7 +71,7 @@
       font-size: 16px;
       font-weight: bold;
       color: white;
-      background: linear-gradient(135deg, #0057ff, #00c8ff);
+      background: linear-gradient(135deg, #1f9d55, #55d187);
       transition: 0.15s;
       white-space: nowrap;
     }
@@ -98,7 +99,7 @@
       padding: 12px;
       border-radius: 14px;
       background: rgba(0, 0, 0, 0.22);
-      color: #d7e5ff;
+      color: #e6fff0;
       min-height: 46px;
       line-height: 1.6;
     }
@@ -133,7 +134,7 @@
     }
 
     .label {
-      color: #8fdcff;
+      color: #a8f5c3;
       font-weight: bold;
       margin: 0 0 6px;
     }
@@ -143,7 +144,7 @@
       text-align: left;
       word-break: break-all;
       white-space: pre-wrap;
-      color: #eaf4ff;
+      color: #f1fff7;
       background: rgba(0, 0, 0, 0.35);
       border-radius: 14px;
       padding: 12px;
@@ -153,13 +154,13 @@
     }
 
     a {
-      color: #7de7ff;
+      color: #8df7b1;
     }
 
     .tip {
       margin-top: 12px;
       font-size: 14px;
-      color: #bcd3ff;
+      color: #d6ffe4;
       line-height: 1.5;
     }
 
@@ -183,7 +184,7 @@
     <h1>Roblox ID Image Finder</h1>
     <p>
       שים פה ID של Roblox, או משהו כמו <b>rbxassetid://123456</b>, וזה יציג לך את התמונה עצמה.
-      תיקנתי את זה ככה שהאתר לא חייב לעשות <b>fetch</b> לרובלוקס, כי בדפדפן זה לפעמים נחסם.
+      האתר מציג את התמונה ישירות בלי fetch כדי למנוע בעיות חסימה.
     </p>
 
     <div class="row">
@@ -254,11 +255,7 @@
 
       lastAssetId = id;
 
-      // זה קישור תמונה ישיר שאפשר לשים בתוך img בלי fetch.
-      // ככה נמנעים מבעיית CORS של GitHub Pages.
       lastImageUrl = "https://www.roblox.com/asset-thumbnail/image?assetId=" + id + "&width=420&height=420&format=png";
-
-      // זה הקישור של ה-JSON, למקרה שאתה רוצה לראות את imageUrl המקורי שרובלוקס מחזיר.
       lastApiUrl = "https://thumbnails.roblox.com/v1/assets?assetIds=" + id + "&size=420x420&format=Png&isCircular=false";
 
       status.textContent = "מנסה להציג את התמונה...";
@@ -270,7 +267,7 @@
       };
 
       preview.onerror = function() {
-        status.innerHTML = "התמונה לא נטענה. יכול להיות שה־ID לא נכון, שהתמונה פרטית/מחוקה, או שזה Decal ID שלא עובד ככה. נסה ללחוץ <b>פתח JSON API</b>.";
+        status.innerHTML = 'התמונה לא נטענה. יכול להיות שה־ID לא נכון, שהתמונה פרטית/מחוקה, או שזה Decal ID שלא עובד ככה. נסה ללחוץ <b>פתח JSON API</b>.';
       };
 
       preview.src = lastImageUrl;
