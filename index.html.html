@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Roblox ID Image Finder</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      font-family: Arial, sans-serif;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: linear-gradient(135deg, #071b4d, #041026);
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .box {
+      width: 100%;
+      max-width: 900px;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      border-radius: 22px;
+      padding: 24px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.35);
+      backdrop-filter: blur(10px);
+    }
+
+    h1 {
+      margin: 0 0 10px;
+      font-size: 30px;
+    }
+
+    p {
+      margin: 0 0 18px;
+      color: #d7e5ff;
+      line-height: 1.6;
+    }
+
+    .row {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+
+    input {
+      flex: 1;
+      border: none;
+      outline: none;
+      border-radius: 14px;
+      padding: 14px 16px;
+      font-size: 17px;
+      background: white;
+      color: #111;
+      direction: ltr;
+      text-align: left;
+    }
+
+    button {
+      border: none;
+      cursor: pointer;
+      border-radius: 14px;
+      padding: 14px 18px;
+      font-size: 16px;
+      font-weight: bold;
+      color: white;
+      background: linear-gradient(135deg, #0057ff, #00c8ff);
+      transition: 0.15s;
+      white-space: nowrap;
+    }
+
+    button:hover {
+      transform: translateY(-1px);
+      filter: brightness(1.08);
+    }
+
+    .small-buttons {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin: 12px 0 0;
+    }
+
+    .small-buttons button {
+      padding: 10px 12px;
+      font-size: 14px;
+      background: rgba(255, 255, 255, 0.16);
+    }
+
+    .status {
+      margin-top: 12px;
+      padding: 12px;
+      border-radius: 14px;
+      background: rgba(0, 0, 0, 0.22);
+      color: #d7e5ff;
+      min-height: 46px;
+      line-height: 1.6;
+    }
+
+    .result {
+      display: none;
+      margin-top: 18px;
+      gap: 18px;
+      grid-template-columns: 330px 1fr;
+      align-items: start;
+    }
+
+    .image-card {
+      background: rgba(0, 0, 0, 0.25);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 18px;
+      padding: 14px;
+    }
+
+    .preview {
+      width: 100%;
+      height: 330px;
+      border-radius: 14px;
+      background: white;
+      object-fit: contain;
+      padding: 10px;
+      display: block;
+    }
+
+    .info {
+      min-width: 0;
+    }
+
+    .label {
+      color: #8fdcff;
+      font-weight: bold;
+      margin: 0 0 6px;
+    }
+
+    .link-box, pre {
+      direction: ltr;
+      text-align: left;
+      word-break: break-all;
+      white-space: pre-wrap;
+      color: #eaf4ff;
+      background: rgba(0, 0, 0, 0.35);
+      border-radius: 14px;
+      padding: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      overflow: auto;
+      max-height: 230px;
+    }
+
+    a {
+      color: #7de7ff;
+    }
+
+    .tip {
+      margin-top: 12px;
+      font-size: 14px;
+      color: #bcd3ff;
+    }
+
+    @media (max-width: 760px) {
+      .row {
+        flex-direction: column;
+      }
+
+      .result {
+        grid-template-columns: 1fr;
+      }
+
+      .preview {
+        height: 300px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="box">
+    <h1>Roblox ID Image Finder</h1>
+    <p>
+      שים פה ID של Roblox, או משהו כמו <b>rbxassetid://123456</b>, וזה יביא לך את התמונה עצמה,
+      את הקישור הישיר שלה, ואת ה־JSON שממנו לוקחים את <b>imageUrl</b>.
+    </p>
+
+    <div class="row">
+      <input id="assetId" placeholder="לדוגמה: 123456789 או rbxassetid://123456789" />
+      <button onclick="getImage()">מצא תמונה</button>
+    </div>
+
+    <div class="status" id="status">מחכה ל־ID...</div>
+
+    <div class="result" id="result">
+      <div class="image-card">
+        <div class="label">התמונה עצמה:</div>
+        <img id="preview" class="preview" alt="Roblox image preview" />
+        <div class="small-buttons">
+          <button onclick="openImage()">פתח תמונה</button>
+          <button onclick="downloadImage()">הורד תמונה</button>
+        </div>
+        <div class="tip">אם ההורדה לא עובדת, תלחץ "פתח תמונה" ואז קליק ימני → שמור תמונה בשם.</div>
+      </div>
+
+      <div class="info">
+        <div class="label">קישור התמונה הישיר:</div>
+        <div id="imageUrl" class="link-box"></div>
+
+        <div class="small-buttons">
+          <button onclick="copyImageUrl()">העתק קישור תמונה</button>
+          <button onclick="openApi()">פתח API</button>
+        </div>
+
+        <br />
+        <div class="label">ה־JSON שחזר מרובלוקס:</div>
+        <pre id="jsonBox"></pre>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let lastImageUrl = "";
+    let lastApiUrl = "";
+    let lastAssetId = "";
+
+    function cleanId(text) {
+      const match = String(text).match(/\d+/);
+      return match ? match[0] : "";
+    }
+
+    async function getImage() {
+      const input = document.getElementById("assetId").value;
+      const id = cleanId(input);
+      const status = document.getElementById("status");
+      const result = document.getElementById("result");
+      const preview = document.getElementById("preview");
+      const imageUrlBox = document.getElementById("imageUrl");
+      const jsonBox = document.getElementById("jsonBox");
+
+      result.style.display = "none";
+      preview.removeAttribute("src");
+      imageUrlBox.textContent = "";
+      jsonBox.textContent = "";
+      lastImageUrl = "";
+      lastApiUrl = "";
+      lastAssetId = "";
+
+      if (!id) {
+        status.textContent = "תכניס ID מספרי תקין.";
+        return;
+      }
+
+      lastAssetId = id;
+      status.textContent = "בודק את ה־ID ברובלוקס ומביא את התמונה...";
+
+      lastApiUrl = "https://thumbnails.roblox.com/v1/assets?assetIds=" + id + "&size=420x420&format=Png&isCircular=false";
+
+      try {
+        const res = await fetch(lastApiUrl);
+        const data = await res.json();
+
+        jsonBox.textContent = JSON.stringify(data, null, 2);
+
+        if (!data.data || !data.data[0]) {
+          status.textContent = "לא נמצא מידע על ה־ID הזה. יכול להיות שזה לא Asset ID תקין.";
+          return;
+        }
+
+        const item = data.data[0];
+
+        if (!item.imageUrl) {
+          status.innerHTML = "רובלוקס לא החזיר imageUrl. מצב: <b>" + item.state + "</b>";
+          imageUrlBox.textContent = "אין imageUrl לתמונה הזאת.";
+          result.style.display = "grid";
+          return;
+        }
+
+        lastImageUrl = item.imageUrl;
+
+        preview.src = lastImageUrl;
+        imageUrlBox.innerHTML = '<a href="' + lastImageUrl + '" target="_blank">' + lastImageUrl + '</a>';
+        result.style.display = "grid";
+
+        if (item.state === "Completed") {
+          status.innerHTML = "נמצא! התמונה מוצגת למטה.";
+        } else {
+          status.innerHTML = "התמונה נמצאה, אבל Roblox החזיר מצב: <b>" + item.state + "</b>.";
+        }
+      } catch (err) {
+        status.innerHTML = "הדפדפן חסם את הבקשה או שיש בעיית רשת. תלחץ על <b>פתח API</b>, תעתיק משם את imageUrl, ואז תפתח אותו בדפדפן.";
+        jsonBox.textContent = String(err);
+        imageUrlBox.textContent = lastApiUrl;
+        result.style.display = "grid";
+      }
+    }
+
+    async function copyImageUrl() {
+      if (!lastImageUrl) return alert("אין עדיין קישור להעתיק.");
+      await navigator.clipboard.writeText(lastImageUrl);
+      alert("הקישור הועתק!");
+    }
+
+    function openImage() {
+      if (!lastImageUrl) return alert("אין עדיין תמונה לפתוח.");
+      window.open(lastImageUrl, "_blank");
+    }
+
+    function openApi() {
+      if (!lastApiUrl) {
+        const id = cleanId(document.getElementById("assetId").value);
+        if (!id) return alert("תכניס ID קודם.");
+        lastApiUrl = "https://thumbnails.roblox.com/v1/assets?assetIds=" + id + "&size=420x420&format=Png&isCircular=false";
+      }
+      window.open(lastApiUrl, "_blank");
+    }
+
+    async function downloadImage() {
+      if (!lastImageUrl) return alert("אין עדיין תמונה להוריד.");
+
+      try {
+        const res = await fetch(lastImageUrl);
+        const blob = await res.blob();
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "roblox-image-" + (lastAssetId || "asset") + ".png";
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        URL.revokeObjectURL(url);
+      } catch (err) {
+        window.open(lastImageUrl, "_blank");
+      }
+    }
+
+    document.getElementById("assetId").addEventListener("keydown", function(e) {
+      if (e.key === "Enter") getImage();
+    });
+  </script>
+</body>
+</html>
