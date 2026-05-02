@@ -160,6 +160,7 @@
       margin-top: 12px;
       font-size: 14px;
       color: #bcd3ff;
+      line-height: 1.5;
     }
 
     @media (max-width: 760px) {
@@ -181,8 +182,8 @@
   <div class="box">
     <h1>Roblox ID Image Finder</h1>
     <p>
-      שים פה ID של Roblox, או משהו כמו <b>rbxassetid://123456</b>, וזה יביא לך את התמונה עצמה,
-      את הקישור הישיר שלה, ואת ה־JSON שממנו לוקחים את <b>imageUrl</b>.
+      שים פה ID של Roblox, או משהו כמו <b>rbxassetid://123456</b>, וזה יציג לך את התמונה עצמה.
+      תיקנתי את זה ככה שהאתר לא חייב לעשות <b>fetch</b> לרובלוקס, כי בדפדפן זה לפעמים נחסם.
     </p>
 
     <div class="row">
@@ -204,16 +205,16 @@
       </div>
 
       <div class="info">
-        <div class="label">קישור התמונה הישיר:</div>
+        <div class="label">קישור להצגת התמונה:</div>
         <div id="imageUrl" class="link-box"></div>
 
         <div class="small-buttons">
-          <button onclick="copyImageUrl()">העתק קישור תמונה</button>
-          <button onclick="openApi()">פתח API</button>
+          <button onclick="copyImageUrl()">העתק קישור</button>
+          <button onclick="openApi()">פתח JSON API</button>
         </div>
 
         <br />
-        <div class="label">ה־JSON שחזר מרובלוקס:</div>
+        <div class="label">קישור ה־JSON של רובלוקס:</div>
         <pre id="jsonBox"></pre>
       </div>
     </div>
@@ -229,7 +230,7 @@
       return match ? match[0] : "";
     }
 
-    async function getImage() {
+    function getImage() {
       const input = document.getElementById("assetId").value;
       const id = cleanId(input);
       const status = document.getElementById("status");
@@ -252,47 +253,28 @@
       }
 
       lastAssetId = id;
-      status.textContent = "בודק את ה־ID ברובלוקס ומביא את התמונה...";
 
+      // זה קישור תמונה ישיר שאפשר לשים בתוך img בלי fetch.
+      // ככה נמנעים מבעיית CORS של GitHub Pages.
+      lastImageUrl = "https://www.roblox.com/asset-thumbnail/image?assetId=" + id + "&width=420&height=420&format=png";
+
+      // זה הקישור של ה-JSON, למקרה שאתה רוצה לראות את imageUrl המקורי שרובלוקס מחזיר.
       lastApiUrl = "https://thumbnails.roblox.com/v1/assets?assetIds=" + id + "&size=420x420&format=Png&isCircular=false";
 
-      try {
-        const res = await fetch(lastApiUrl);
-        const data = await res.json();
+      status.textContent = "מנסה להציג את התמונה...";
+      imageUrlBox.innerHTML = '<a href="' + lastImageUrl + '" target="_blank">' + lastImageUrl + '</a>';
+      jsonBox.textContent = lastApiUrl;
 
-        jsonBox.textContent = JSON.stringify(data, null, 2);
+      preview.onload = function() {
+        status.textContent = "נמצא! התמונה מוצגת למטה.";
+      };
 
-        if (!data.data || !data.data[0]) {
-          status.textContent = "לא נמצא מידע על ה־ID הזה. יכול להיות שזה לא Asset ID תקין.";
-          return;
-        }
+      preview.onerror = function() {
+        status.innerHTML = "התמונה לא נטענה. יכול להיות שה־ID לא נכון, שהתמונה פרטית/מחוקה, או שזה Decal ID שלא עובד ככה. נסה ללחוץ <b>פתח JSON API</b>.";
+      };
 
-        const item = data.data[0];
-
-        if (!item.imageUrl) {
-          status.innerHTML = "רובלוקס לא החזיר imageUrl. מצב: <b>" + item.state + "</b>";
-          imageUrlBox.textContent = "אין imageUrl לתמונה הזאת.";
-          result.style.display = "grid";
-          return;
-        }
-
-        lastImageUrl = item.imageUrl;
-
-        preview.src = lastImageUrl;
-        imageUrlBox.innerHTML = '<a href="' + lastImageUrl + '" target="_blank">' + lastImageUrl + '</a>';
-        result.style.display = "grid";
-
-        if (item.state === "Completed") {
-          status.innerHTML = "נמצא! התמונה מוצגת למטה.";
-        } else {
-          status.innerHTML = "התמונה נמצאה, אבל Roblox החזיר מצב: <b>" + item.state + "</b>.";
-        }
-      } catch (err) {
-        status.innerHTML = "הדפדפן חסם את הבקשה או שיש בעיית רשת. תלחץ על <b>פתח API</b>, תעתיק משם את imageUrl, ואז תפתח אותו בדפדפן.";
-        jsonBox.textContent = String(err);
-        imageUrlBox.textContent = lastApiUrl;
-        result.style.display = "grid";
-      }
+      preview.src = lastImageUrl;
+      result.style.display = "grid";
     }
 
     async function copyImageUrl() {
@@ -315,23 +297,16 @@
       window.open(lastApiUrl, "_blank");
     }
 
-    async function downloadImage() {
+    function downloadImage() {
       if (!lastImageUrl) return alert("אין עדיין תמונה להוריד.");
 
-      try {
-        const res = await fetch(lastImageUrl);
-        const blob = await res.blob();
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = "roblox-image-" + (lastAssetId || "asset") + ".png";
-        document.body.appendChild(a);
-        a.click();
-        a.remove();
-        URL.revokeObjectURL(url);
-      } catch (err) {
-        window.open(lastImageUrl, "_blank");
-      }
+      const a = document.createElement("a");
+      a.href = lastImageUrl;
+      a.download = "roblox-image-" + (lastAssetId || "asset") + ".png";
+      a.target = "_blank";
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
     }
 
     document.getElementById("assetId").addEventListener("keydown", function(e) {
